@@ -54,23 +54,39 @@
     </div>
   </div>
 
-  <script>
-    const sourceText = document.getElementById('source-text');
-    const translatedText = document.getElementById('translated-text');
+<script>
+  function getStorageKey(suffix) {
+    return `${location.hash || '#default'}-${suffix}`;
+  }
 
-    // Load saved text from localStorage
-    sourceText.value = localStorage.getItem('sourceText') || '';
-    translatedText.value = localStorage.getItem('translatedText') || '';
+  function loadText() {
+    sourceText.value = localStorage.getItem(getStorageKey('source')) || '';
+    translatedText.value = localStorage.getItem(getStorageKey('translated')) || '';
+  }
 
-    // Save text when Ctrl + S is pressed
-    document.addEventListener('keydown', (event) => {
-      if ((window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)  && e.keyCode == 83) {
-        event.preventDefault(); // Prevent the default browser save dialog
-        localStorage.setItem('sourceText', sourceText.value);
-        localStorage.setItem('translatedText', translatedText.value);
-        alert('Text saved!');
-      }
-    });
-  </script>
+  function saveText() {
+    localStorage.setItem(getStorageKey('source'), sourceText.value);
+    localStorage.setItem(getStorageKey('translated'), translatedText.value);
+    alert('Text saved!');
+  }
+
+  const sourceText = document.getElementById('source-text');
+  const translatedText = document.getElementById('translated-text');
+
+  // Load text based on hash
+  loadText();
+
+  // Listen for hash changes and reload text
+  window.addEventListener('hashchange', loadText);
+
+  // Save text when Ctrl + S (Windows/Linux) or Cmd + S (Mac) is pressed
+  document.addEventListener('keydown', (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+      event.preventDefault();
+      saveText();
+    }
+  });
+</script>
+
 </body>
 </html>
