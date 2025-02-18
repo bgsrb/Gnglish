@@ -64,7 +64,7 @@
 
     // Save text when Ctrl + S is pressed
     document.addEventListener('keydown', (event) => {
-      if (event.ctrlKey && event.key === 's') {
+      if ((window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)  && e.keyCode == 83) {
         event.preventDefault(); // Prevent the default browser save dialog
         localStorage.setItem('sourceText', sourceText.value);
         localStorage.setItem('translatedText', translatedText.value);
