@@ -62,13 +62,14 @@
     sourceText.value = localStorage.getItem('sourceText') || '';
     translatedText.value = localStorage.getItem('translatedText') || '';
 
-    // Save text to localStorage on input
-    sourceText.addEventListener('input', () => {
-      localStorage.setItem('sourceText', sourceText.value);
-    });
-
-    translatedText.addEventListener('input', () => {
-      localStorage.setItem('translatedText', translatedText.value);
+    // Save text when Ctrl + S is pressed
+    document.addEventListener('keydown', (event) => {
+      if (event.ctrlKey && event.key === 's') {
+        event.preventDefault(); // Prevent the default browser save dialog
+        localStorage.setItem('sourceText', sourceText.value);
+        localStorage.setItem('translatedText', translatedText.value);
+        alert('Text saved!');
+      }
     });
   </script>
 </body>
