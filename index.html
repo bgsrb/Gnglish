@@ -1,92 +1,159 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://fonts.cdnfonts.com/css/youtube-sans" rel="stylesheet">
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-    .column {
-      float: left;
-      width: 50%;
-      height: 100vh;
-    }
-    .row:after {
-      content: "";
-      display: table;
-      clear: both;
-    }
-    .row {
-      margin: 0 auto;
-      width: 768px;
-    }
-    body {
-      font-family: 'YouTube Sans Dark', sans-serif;
-      margin: 0 auto;
-      background: white;
-    }
-    textarea {
-      width: 100%;
-      height: 100%;
-      border: none;
-      outline: none;
-      box-shadow: none;
-      resize: none;
-      font-size: 12px;
-      line-height: 24px;
-      font-family: 'YouTube Sans Dark', sans-serif;
-      padding: 20px;
-    }
-    #translated-text {
-      background-color: whitesmoke;
-      color: slategrey;
-    }
-  </style>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
+
+	<link href="https://fonts.cdnfonts.com/css/youtube-sans" rel="stylesheet">
+	<style>
+		* {
+			box-sizing: border-box;
+		}
+
+		.column {
+			float: left;
+			width: 50%;
+			height: 100vh;
+		}
+
+		.row:after {
+			content: "";
+			display: table;
+			clear: both;
+		}
+
+		.row {
+			margin: 0 auto;
+			width: 768px;
+		}
+
+		body {
+			font-family: 'YouTube Sans Dark', sans-serif;
+			margin: 0 auto;
+			background: white;
+		}
+
+		.textarea {
+			width: 100%;
+			height: 100%;
+			border: none;
+			outline: none;
+			box-shadow: none;
+			resize: none;
+			font-size: 12px;
+			line-height: 24px;
+			font-family: 'YouTube Sans Dark', sans-serif;
+			padding: 20px;
+		}
+
+		#translated-text {
+			background-color: whitesmoke;
+			color: slategrey;
+		}
+
+		.ce-toolbar__actions {
+			display: none;
+		}
+
+		.ce-popover__items>*,
+		.ct--top {
+			display: none !important;
+		}
+
+		.ce-popover__items>*[data-item-name="Marker"] {
+			display: block !important;
+		}
+	</style>
 </head>
+
 <body>
-  <div class="row">
-    <div class="column">
-      <textarea id="source-text" spellcheck="false"></textarea>
-    </div>
-    <div class="column">
-      <textarea id="translated-text" spellcheck="false"></textarea>
-    </div>
-  </div>
+	<div class="row">
 
-<script>
-  function getStorageKey(suffix) {
-    return `${location.hash || '#default'}-${suffix}`;
-  }
+		<div class="column">
+			<div id="source-text" class="textarea"></div>
 
-  function loadText() {
-    sourceText.value = localStorage.getItem(getStorageKey('source')) || '';
-    translatedText.value = localStorage.getItem(getStorageKey('translated')) || '';
-  }
+		</div>
+		<div class="column">
+			<div id="translated-text" class="textarea"></div>
+		</div>
+	</div>
 
-  function saveText() {
-    localStorage.setItem(getStorageKey('source'), sourceText.value);
-    localStorage.setItem(getStorageKey('translated'), translatedText.value);
-    alert('Text saved!');
-  }
+	<script>
 
-  const sourceText = document.getElementById('source-text');
-  const translatedText = document.getElementById('translated-text');
 
-  // Load text based on hash
-  loadText();
+		const sourceContent = JSON.parse(localStorage.getItem(getStorageKey('source')));
+		const translatedContent = JSON.parse(localStorage.getItem(getStorageKey('translated')));
 
-  // Listen for hash changes and reload text
-  window.addEventListener('hashchange', loadText);
+		const sourceEditor = new EditorJS({
+			holder: 'source-text',
+			tools: {
+				Marker: {
+					class: Marker,
+					shortcut: 'CMD+SHIFT+M',
+				}
+			},
+			data: sourceContent || {}, // Load saved content or start with empty
+		});
 
-  // Save text when Ctrl + S (Windows/Linux) or Cmd + S (Mac) is pressed
-  document.addEventListener('keydown', (event) => {
-    if ((event.ctrlKey || event.metaKey) && event.key === 's') {
-      event.preventDefault();
-      saveText();
-    }
-  });
-</script>
+		const translatedEditor = new EditorJS({
+			holder: 'translated-text',
+			tools: {
+				Marker: {
+					class: Marker,
+					shortcut: 'CMD+SHIFT+M',
+				}
+			},
+			data: translatedContent || {}, // Load saved content or start with empty
+		});
 
+		function getStorageKey(suffix) {
+			return `${location.hash || '#default'}-${suffix}`;
+		}
+
+		function loadText() {
+			sourceText.value = localStorage.getItem(getStorageKey('source')) || '';
+			translatedText.value = localStorage.getItem(getStorageKey('translated')) || '';
+		}
+
+		function saveText() {
+			sourceEditor.save().then((outputData) => {
+				localStorage.setItem(getStorageKey('source'), JSON.stringify(outputData));
+			}).catch((error) => {
+				console.error('Saving failed: ', error);
+			});
+
+			translatedEditor.save().then((outputData) => {
+				localStorage.setItem(getStorageKey('translated'), JSON.stringify(outputData));
+			}).catch((error) => {
+				console.error('Saving failed: ', error);
+			});
+
+
+			// localStorage.setItem(getStorageKey('source'), sourceText.value);
+			// localStorage.setItem(getStorageKey('translated'), translatedText.value);
+			alert('Text saved!');
+		}
+
+		const sourceText = document.getElementById('source-text');
+		const translatedText = document.getElementById('translated-text');
+
+		// Load text based on hash
+		loadText();
+
+		// Listen for hash changes and reload text
+		window.addEventListener('hashchange', loadText);
+
+		// Save text when Ctrl + S (Windows/Linux) or Cmd + S (Mac) is pressed
+		document.addEventListener('keydown', (event) => {
+			if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+				event.preventDefault();
+				saveText();
+			}
+		});
+	</script>
 </body>
+
 </html>
