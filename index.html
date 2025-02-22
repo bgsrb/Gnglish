@@ -212,7 +212,7 @@
 			}
 		});
 
-		$(window).unload(function(){
+		window.onunload = function() {
 		  saveText();
 		});
 	</script>
