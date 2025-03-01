@@ -213,7 +213,9 @@
 		});
 
 		window.onunload = function() {
-		  saveText();
+  			if (confirm("Do you want to save it!") == true) {
+     				saveText();
+  			}	 
 		};
 	</script>
 </body>
